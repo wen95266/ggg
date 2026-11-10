@@ -2857,11 +2857,52 @@ function getPlayerInfoByRelSeat(relSeat: number): { name: string; avatar: string
   };
 }
 
+  function ensureOpponentHandSize(botIdx: number) {
+    if (dealingPhase.value !== 'playing' && dealingPhase.value !== 'sorting_tiles') return;
+    const relSeat = botIdx + 1;
+    const oppHand = oppHands.value[botIdx] || [];
+    const meldCount = (oppMelds.value[botIdx] || []).length;
+    const isTurn = turnPlayer.value === relSeat;
+    // Standard Mahjong rule: standing hand size is (14 - meldCount*3) on turn, or (13 - meldCount*3) off turn
+    const targetCount = Math.max(1, (isTurn ? 14 : 13) - (meldCount * 3));
+
+    while (oppHand.length < targetCount) {
+      if (wallPool.length > 0) {
+        oppHand.push(wallPool.shift()!);
+        wallCount.value = wallPool.length;
+      } else {
+        oppHand.push({
+          id: `opp-ph-${botIdx}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: 'wan',
+          value: 1,
+          text: '一万',
+          color: '#DC2626',
+        });
+      }
+    }
+
+    while (oppHand.length > targetCount) {
+      oppHand.pop();
+    }
+
+    oppHands.value[botIdx] = oppHand;
+  }
+
+  function getOpponentTotalTileCount(relSeat: number): number {
+    if (dealingPhase.value === 'dealing_tiles') {
+      return oppHandsDealtCount.value[relSeat - 1] || 0;
+    }
+    if (dealingPhase.value === 'rolling_dice') return 0;
+    const botIdx = relSeat - 1;
+    ensureOpponentHandSize(botIdx);
+    const handLen = oppHands.value[botIdx]?.length || 0;
+    const meldCount = (oppMelds.value[botIdx] || []).length;
+    return handLen + meldCount * 3;
+  }
+
   // 1. Top: North (顶部玩家: 蓝色椭圆头像)
   const northInfo = getPlayerInfoByRelSeat(2);
-  const northCount = dealingPhase.value === 'dealing_tiles'
-    ? oppHandsDealtCount.value[1]
-    : (dealingPhase.value === 'rolling_dice' ? 0 : oppCounts.value[1]);
+  const northCount = getOpponentTotalTileCount(2);
   drawOvalOpponentAvatar(
     width / 2,
     26,
@@ -2928,9 +2969,7 @@ function getPlayerInfoByRelSeat(relSeat: number): { name: string; avatar: string
 
   // 2. Left: West (左玩家: 红色椭圆头像)
   const westInfo = getPlayerInfoByRelSeat(3);
-  const westCount = dealingPhase.value === 'dealing_tiles'
-    ? oppHandsDealtCount.value[2]
-    : (dealingPhase.value === 'rolling_dice' ? 0 : oppCounts.value[2]);
+  const westCount = getOpponentTotalTileCount(3);
   drawOvalOpponentAvatar(
     30,
     90,
@@ -2948,9 +2987,7 @@ function getPlayerInfoByRelSeat(relSeat: number): { name: string; avatar: string
 
   // 3. Right: East (右玩家: 绿色椭圆头像)
   const eastInfo = getPlayerInfoByRelSeat(1);
-  const eastCount = dealingPhase.value === 'dealing_tiles'
-    ? oppHandsDealtCount.value[0]
-    : (dealingPhase.value === 'rolling_dice' ? 0 : oppCounts.value[0]);
+  const eastCount = getOpponentTotalTileCount(1);
   drawOvalOpponentAvatar(
     width - 30,
     90,
@@ -3776,6 +3813,7 @@ function handleRemoteGameEvent(evtAbsSeat: number, evt: any) {
       }
     }
     turnPlayer.value = relSeat;
+    ensureOpponentHandSize(botIdx);
     startTurnCountdown();
     tipMessage.value = `🀄 【${SEAT_NAMES[relSeat]}】 摸了一张牌`;
     drawTable();
@@ -3795,6 +3833,7 @@ function handleRemoteGameEvent(evtAbsSeat: number, evt: any) {
     discards.value.push(tile);
     lastDiscarded.value = tile;
     turnPlayer.value = relSeat;
+    ensureOpponentHandSize(botIdx);
     startTurnCountdown();
 
     soundFX.playMahjongClack();
@@ -3811,13 +3850,19 @@ function handleRemoteGameEvent(evtAbsSeat: number, evt: any) {
     const oppHand = oppHands.value[botIdx] || [];
     if (tile) {
       let removedCount = 0;
-      oppHands.value[botIdx] = oppHand.filter((c) => {
+      let filtered = oppHand.filter((c) => {
         if (removedCount < 2 && c.type === tile.type && c.value === tile.value) {
           removedCount++;
           return false;
         }
         return true;
       });
+      // Guarantee exactly 2 cards are removed from standing hand after Peng
+      while (removedCount < 2 && filtered.length > 0) {
+        filtered.pop();
+        removedCount++;
+      }
+      oppHands.value[botIdx] = filtered;
       oppMelds.value[botIdx].push([tile, tile, tile]);
       if (discards.value.length > 0 && discards.value[discards.value.length - 1].id === tile.id) {
         discards.value.pop();
@@ -3825,6 +3870,7 @@ function handleRemoteGameEvent(evtAbsSeat: number, evt: any) {
       lastDiscarded.value = null;
     }
     turnPlayer.value = relSeat;
+    ensureOpponentHandSize(botIdx);
     startTurnCountdown();
     soundFX.playMahjongClack();
     soundFX.speakAction('peng', { isFemale: botIdx === 1 });
@@ -3833,6 +3879,28 @@ function handleRemoteGameEvent(evtAbsSeat: number, evt: any) {
     drawTable();
     saveLocalSnapshot();
   } else if (evt.action === 'gang') {
+    const tile = evt.tile || lastDiscarded.value;
+    const oppHand = oppHands.value[botIdx] || [];
+    if (tile) {
+      let removedCount = 0;
+      let filtered = oppHand.filter((c) => {
+        if (removedCount < 3 && c.type === tile.type && c.value === tile.value) {
+          removedCount++;
+          return false;
+        }
+        return true;
+      });
+      while (removedCount < 3 && filtered.length > 0) {
+        filtered.pop();
+        removedCount++;
+      }
+      oppHands.value[botIdx] = filtered;
+      oppMelds.value[botIdx].push([tile, tile, tile, tile]);
+      if (discards.value.length > 0 && discards.value[discards.value.length - 1].id === tile.id) {
+        discards.value.pop();
+      }
+      lastDiscarded.value = null;
+    }
     if (wallPool.length > 0) {
       const supp = wallPool.pop();
       wallCount.value = wallPool.length;
@@ -3841,6 +3909,7 @@ function handleRemoteGameEvent(evtAbsSeat: number, evt: any) {
       }
     }
     turnPlayer.value = relSeat;
+    ensureOpponentHandSize(botIdx);
     soundFX.playMahjongClack();
     soundFX.speakAction('gang', { isFemale: botIdx === 1 });
     emit('fx', 'gang');
