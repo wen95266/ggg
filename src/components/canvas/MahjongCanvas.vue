@@ -98,23 +98,11 @@
         </div>
       </div>
 
-      <!-- In-Table Integrated Action Buttons (Centered under player's hand) -->
+      <!-- In-Table Integrated Action Buttons (Centered under player's hand for Peng/Gang/Hu/Pass claims) -->
       <div
-        v-if="!hasWon && dealingPhase === 'playing' && (canPeng || canGang || canHu || selectedIndex !== null || isClaiming)"
+        v-if="!hasWon && dealingPhase === 'playing' && (canPeng || canGang || canHu || isClaiming)"
         class="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 sm:gap-2.5 pointer-events-auto justify-center flex-wrap"
       >
-        <!-- Auto-Host Button in Central Action Bar (Placed on Left to avoid right-side tile misclicks) -->
-        <button
-          key="autohost-btn"
-          type="button"
-          @click="toggleAutoHost"
-          class="px-3 sm:px-3.5 py-1.5 text-xs sm:text-sm font-bold rounded-xl bg-stone-900/85 hover:bg-stone-800 text-amber-200 border border-amber-500/50 hover:border-amber-400 shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1"
-          title="开启智能托管：以麻将向听数、多门叫听与防守逻辑全自动代打"
-        >
-          <span>⚡</span>
-          <span>托管</span>
-        </button>
-
         <!-- Peng (Allowed) with tile name -->
         <button
           v-if="canPeng"
@@ -162,30 +150,13 @@
         >
           自摸胡牌！🀄
         </button>
-
-        <!-- Discard Selected Tile Button -->
-        <button
-          v-if="selectedIndex !== null && myHand.length % 3 === 2"
-          key="discard-btn"
-          type="button"
-          @click="handleDiscardSelected"
-          class="px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm font-extrabold rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-xl hover:scale-105 active:scale-95 transition-all ring-1 ring-purple-300 cursor-pointer"
-        >
-          打出【{{ myHand[selectedIndex]?.text }}】
-        </button>
       </div>
 
-      <!-- Long-standing Auto-Host Controls (Placed on Bottom-Left to prevent misclicking rightmost drawn tile) -->
+      <!-- Long-standing Persistent Auto-Host Controls (Placed on Bottom-Left to prevent misclicking rightmost drawn tile) -->
       <div
         v-if="!hasWon && !isDrawStalemate && dealingPhase === 'playing'"
         class="absolute bottom-4 sm:bottom-6 z-30 pointer-events-auto transition-all"
-        :class="[
-          isAutoHost 
-            ? 'left-1/2 -translate-x-1/2' 
-            : !(canPeng || canGang || canHu || selectedIndex !== null || isClaiming)
-              ? 'left-4 sm:left-6'
-              : 'hidden'
-        ]"
+        :class="isAutoHost ? 'left-1/2 -translate-x-1/2' : 'left-4 sm:left-6'"
       >
         <!-- Cancel Auto-Host Button -->
         <button
@@ -198,9 +169,9 @@
           <span class="px-2 py-0.5 rounded-lg bg-black/40 text-amber-200 border border-white/20 font-bold hover:bg-black/70">取消托管</span>
         </button>
 
-        <!-- Standalone Persistent Auto-Host Button (when action bar is not visible, placed on left-4 sm:left-6) -->
+        <!-- Standalone Persistent Auto-Host Button (Left-4 sm:left-6) -->
         <button
-          v-else-if="!(canPeng || canGang || canHu || selectedIndex !== null || isClaiming)"
+          v-else
           type="button"
           @click="toggleAutoHost"
           class="px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-[#241B14]/90 hover:bg-[#32251B] text-amber-300 border-2 border-amber-500/60 hover:border-amber-400 shadow-[0_4px_16px_rgba(0,0,0,0.6)] backdrop-blur-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
@@ -852,14 +823,14 @@ const readyPlayersCount = computed(() => {
 
 const isAutoHost = ref(false);
 const isDrawStalemate = ref(false);
-const turnCountdown = ref(30);
+const turnCountdown = ref(60);
 let countdownInterval: any = null;
 let autoHostTimer: any = null;
 
 function startTurnCountdown() {
   stopTurnCountdown();
   if (hasWon.value || isDrawStalemate.value) return;
-  turnCountdown.value = 30;
+  turnCountdown.value = 60;
   drawTable();
   countdownInterval = setInterval(() => {
     if (hasWon.value || isDrawStalemate.value) {
@@ -2589,7 +2560,6 @@ function triggerMahjongWin(winnerSeat: number, isFourHongzhong = false) {
     haptics.sealStamp();
     haptics.victory();
   }
-  emit('fx', 'hu');
 
   if (fourHzWin) {
     soundFX.speakAction(isPlayer ? '摸到四张红中！天降大满贯！' : `${winnerName}摸到四张红中胡牌！`);
@@ -3433,7 +3403,6 @@ function handlePeng() {
     soundFX.playMahjongClack();
     haptics.sealStamp();
     soundFX.speakAction('peng');
-    emit('fx', 'peng');
     tipMessage.value = `碰牌成功！碰进【${d.text}】亮刻，请打出一张牌`;
     turnPlayer.value = 0;
     selectedIndex.value = null;
@@ -3456,7 +3425,6 @@ function handleGang() {
   soundFX.playMahjongClack();
   haptics.sealStamp();
   soundFX.speakAction('gang');
-  emit('fx', 'gang');
 
   let kongedOpponentSeat: number | null = null;
   let isAnOrBuGang = false;
@@ -3638,7 +3606,6 @@ function botPlay(seat: number, next: () => void) {
       lastDiscarded.value = null;
       soundFX.playMahjongClack();
       soundFX.speakAction('gang', { isFemale: botIdx === 1 });
-      emit('fx', 'gang');
       tipMessage.value = `🀄 【${SEAT_NAMES[seat]}】大喊：杠！明杠拿下【${d.text}】`;
 
       // 杠后开花：补抓一张牌
@@ -3689,7 +3656,6 @@ function botPlay(seat: number, next: () => void) {
       lastDiscarded.value = null;
       soundFX.playMahjongClack();
       soundFX.speakAction('peng', { isFemale: botIdx === 1 });
-      emit('fx', 'peng');
       tipMessage.value = `🀄 【${SEAT_NAMES[seat]}】大喊：碰！拿下了【${d.text}】`;
       drawTable();
 
@@ -3874,7 +3840,6 @@ function handleRemoteGameEvent(evtAbsSeat: number, evt: any) {
     startTurnCountdown();
     soundFX.playMahjongClack();
     soundFX.speakAction('peng', { isFemale: botIdx === 1 });
-    emit('fx', 'peng');
     tipMessage.value = `🀄 【${SEAT_NAMES[relSeat]}】 大喊：碰！`;
     drawTable();
     saveLocalSnapshot();
@@ -3912,7 +3877,6 @@ function handleRemoteGameEvent(evtAbsSeat: number, evt: any) {
     ensureOpponentHandSize(botIdx);
     soundFX.playMahjongClack();
     soundFX.speakAction('gang', { isFemale: botIdx === 1 });
-    emit('fx', 'gang');
     tipMessage.value = `🀄 【${SEAT_NAMES[relSeat]}】 大喊：杠！`;
     drawTable();
     saveLocalSnapshot();

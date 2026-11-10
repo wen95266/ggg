@@ -293,7 +293,7 @@
           <div
             class="min-w-[62px] sm:min-w-[76px] h-9 sm:h-10 px-2 sm:px-2.5 rounded-xl border text-xs sm:text-sm font-mono font-bold flex items-center justify-center gap-1 shrink-0 shadow-md transition-all bg-red-950/90 border-red-500/80 text-red-400 shadow-[0_0_14px_rgba(239,68,68,0.4)]"
             :class="{ 'animate-pulse ring-1 ring-red-400': turnCountdown <= 10 }"
-            title="本手思考时间上限30秒"
+            title="本手思考时间上限60秒"
           >
             <span>⏱️</span>
             <span class="tabular-nums font-black text-red-400 tracking-tight">{{ winnerSeat === null ? `${turnCountdown}s` : '--' }}</span>
@@ -967,8 +967,7 @@ function handleQiangGong(seat: number = mySeat.value, isRemote = false) {
   // 3. 语音播报与音效
   soundFX.playCardSnap(true);
   soundFX.speakAction('qianggong');
-  emit('fx', 'bomb');
-  haptics.bomb();
+  haptics.playCard();
 
   // 4. 保持头像框变成红色一闪一闪
   startPulseLoop();
@@ -982,8 +981,8 @@ function handleQiangGong(seat: number = mySeat.value, isRemote = false) {
     }));
   }
 
+  startTurnCountdown();
   if (starter !== mySeat.value) {
-    stopTurnCountdown();
     if (isSeatBot(starter)) {
       if (botTimer) clearTimeout(botTimer);
       botTimer = setTimeout(() => {
@@ -991,10 +990,7 @@ function handleQiangGong(seat: number = mySeat.value, isRemote = false) {
       }, 700);
     }
   } else if (isAutoHost.value) {
-    stopTurnCountdown();
     checkAutoHostTurn();
-  } else {
-    startTurnCountdown();
   }
 }
 
@@ -1016,7 +1012,7 @@ const isAutoHost = ref(false);
 let autoHostTimer: any = null;
 let playerAutoTimer: any = null;
 let remoteWatchdogTimer: any = null;
-const turnCountdown = ref(30);
+const turnCountdown = ref(60);
 let countdownInterval: any = null;
 
 function resetRemoteWatchdog() {
@@ -1024,7 +1020,7 @@ function resetRemoteWatchdog() {
     clearTimeout(remoteWatchdogTimer);
     remoteWatchdogTimer = null;
   }
-  // 在纯真人联机场景下，如果轮到其他玩家出牌超过 22 秒未出牌，自动保底顺延防卡桌
+  // 在纯真人联机场景下，如果轮到其他玩家出牌超过 52 秒未出牌，自动保底顺延防卡桌
   if (!props.isPracticeMode && turnSeat.value !== mySeat.value && winnerSeat.value === null) {
     remoteWatchdogTimer = setTimeout(() => {
       if (!props.isPracticeMode && turnSeat.value !== mySeat.value && winnerSeat.value === null) {
@@ -1052,7 +1048,7 @@ function resetRemoteWatchdog() {
           }
         }
       }
-    }, 22000);
+    }, 52000);
   }
 }
 
@@ -1065,7 +1061,7 @@ function stopTurnCountdown() {
     clearTimeout(playerAutoTimer);
     playerAutoTimer = null;
   }
-  turnCountdown.value = 30;
+  turnCountdown.value = 60;
   resetRemoteWatchdog();
 }
 
@@ -1073,7 +1069,7 @@ function startTurnCountdown() {
   stopTurnCountdown();
   resetRemoteWatchdog();
   if (winnerSeat.value === null) {
-    turnCountdown.value = 30;
+    turnCountdown.value = 60;
     countdownInterval = setInterval(() => {
       if (winnerSeat.value !== null) {
         stopTurnCountdown();
@@ -1094,6 +1090,8 @@ function startTurnCountdown() {
           }
           emitStatus();
           checkAutoHostTurn();
+        } else if (turnSeat.value !== mySeat.value && isSeatBot(turnSeat.value)) {
+          botStep(turnSeat.value);
         }
       }
     }, 1000);
@@ -1692,8 +1690,8 @@ function applyDeal(deal: any, forceReApply = false) {
   drawTable();
   emitStatus();
 
+  startTurnCountdown();
   if (starter !== mySeat.value) {
-    stopTurnCountdown();
     seatStatus[starter] = `${seatNames[starter]} 执♦4准备首出...`;
     if (isSeatBot(starter)) {
       if (botTimer) clearTimeout(botTimer);
@@ -1702,10 +1700,7 @@ function applyDeal(deal: any, forceReApply = false) {
       }, 2000);
     }
   } else if (isAutoHost.value && turnSeat.value === mySeat.value) {
-    stopTurnCountdown();
     checkAutoHostTurn();
-  } else {
-    startTurnCountdown();
   }
 }
 
@@ -1782,8 +1777,8 @@ function dealNewMatch() {
   drawTable();
   emitStatus();
 
+  startTurnCountdown();
   if (starter !== mySeat.value) {
-    stopTurnCountdown();
     // 留出 2.0 秒给洗发牌与玩家理牌看牌时间，避免刚进房间就听到机器人出牌语音
     seatStatus[starter] = `${['本家', '西席', '北席', '东席'][starter]} 执♦4准备首出...`;
     if (isSeatBot(starter)) {
@@ -1794,10 +1789,7 @@ function dealNewMatch() {
       }, 2000);
     }
   } else if (isAutoHost.value && turnSeat.value === mySeat.value) {
-    stopTurnCountdown();
     checkAutoHostTurn();
-  } else {
-    startTurnCountdown();
   }
 }
 
@@ -2792,7 +2784,6 @@ function afterComboPlayed(seat: number, combo: Combo, isRemote: boolean = false)
 
       soundFX.speakAction('unbeatable');
       soundFX.speakVoice(`${names[seat]}${rankTitle}打出全场绝大！无人可压，下家${names[nextS]}直接接风！`, 1.05);
-      emit('fx', 'dragon');
 
       seatStatus[seat] = `🎉 ${rankTitle} · 绝大出清 (${combo.label})`;
       for (let i = 0; i < 4; i++) {
@@ -2824,14 +2815,15 @@ function afterComboPlayed(seat: number, combo: Combo, isRemote: boolean = false)
           }
         }
 
+        startTurnCountdown();
         if (nextS === mySeat.value) {
           seatStatus[mySeat.value] = '🎉 接风领出 · 该您首出任意新牌！';
           drawTable();
           emitStatus();
           if (isAutoHost.value) {
             checkAutoHostTurn();
-          } else if (!checkPlayerAutoTurnActions()) {
-            startTurnCountdown();
+          } else {
+            checkPlayerAutoTurnActions();
           }
         } else {
           seatStatus[nextS] = `🎉 接风领出 · 【${names[nextS]}】思考领出新牌...`;
@@ -2858,14 +2850,15 @@ function afterComboPlayed(seat: number, combo: Combo, isRemote: boolean = false)
       drawTable();
       emitStatus();
 
+      startTurnCountdown();
       if (nextS === mySeat.value) {
         seatStatus[mySeat.value] = '该您跟牌 (必须压制桌面)';
         drawTable();
         emitStatus();
         if (isAutoHost.value) {
           checkAutoHostTurn();
-        } else if (!checkPlayerAutoTurnActions()) {
-          startTurnCountdown();
+        } else {
+          checkPlayerAutoTurnActions();
         }
       } else {
         seatStatus[nextS] = `${names[nextS]} 思考跟牌...`;
@@ -2891,7 +2884,6 @@ function afterComboPlayed(seat: number, combo: Combo, isRemote: boolean = false)
     }, 4500);
 
     soundFX.speakAction(isCountShort ? 'cards_short' : 'unbeatable');
-    emit('fx', 'dragon');
 
     // 其它存活各家直接显示要不起
     for (let i = 0; i < 4; i++) {
@@ -2933,14 +2925,15 @@ function afterComboPlayed(seat: number, combo: Combo, isRemote: boolean = false)
         }
       }
 
+      startTurnCountdown();
       if (seat === mySeat.value) {
         seatStatus[mySeat.value] = '👑 全场绝大 · 该您领出新牌！';
         drawTable();
         emitStatus();
         if (isAutoHost.value) {
           checkAutoHostTurn();
-        } else if (!checkPlayerAutoTurnActions()) {
-          startTurnCountdown();
+        } else {
+          checkPlayerAutoTurnActions();
         }
       } else {
         seatStatus[seat] = `👑 全场绝大 · 【${names[seat]}】思考领出新牌...`;
@@ -2961,56 +2954,20 @@ function afterComboPlayed(seat: number, combo: Combo, isRemote: boolean = false)
 
   // 正常逆时针流转至下一个存活玩家
   const nextS = getNextActiveSeat(seat);
-  const isBigCombo = combo.type === '5_card' || combo.cards.length >= 4 || combo.comboTier !== undefined;
-
-  if (isBigCombo) {
-    for (let i = 0; i < 4; i++) {
-      if (i !== seat && !finishedSeats.includes(i)) {
-        seatStatus[i] = `欣赏大牌：${combo.label}`;
-      }
-    }
-    turnSeat.value = -1;
-    drawTable();
-    emitStatus();
-
-    setTimeout(() => {
-      if (winnerSeat.value !== null) return;
-      turnSeat.value = nextS;
-
-      if (nextS === mySeat.value) {
-        seatStatus[mySeat.value] = lastCombo.value ? '该您跟牌' : '该您出牌';
-        drawTable();
-        emitStatus();
-        if (isAutoHost.value) {
-          checkAutoHostTurn();
-        } else if (!checkPlayerAutoTurnActions()) {
-          startTurnCountdown();
-        }
-      } else {
-        const names = ['本家', '西席', '北席', '东席'];
-        seatStatus[nextS] = lastCombo.value ? `${names[nextS]} 思考跟牌...` : `${names[nextS]} 思考出牌...`;
-        drawTable();
-        emitStatus();
-        if (isSeatBot(nextS)) {
-          runBotTurns(nextS);
-        }
-      }
-    }, 2000);
-    return;
-  }
 
   turnSeat.value = nextS;
   drawTable();
   emitStatus();
 
+  startTurnCountdown();
   if (nextS === mySeat.value) {
     seatStatus[mySeat.value] = lastCombo.value ? '该您跟牌' : '该您出牌';
     drawTable();
     emitStatus();
     if (isAutoHost.value) {
       checkAutoHostTurn();
-    } else if (!checkPlayerAutoTurnActions()) {
-      startTurnCountdown();
+    } else {
+      checkPlayerAutoTurnActions();
     }
   } else {
     const names = ['本家', '西席', '北席', '东席'];
@@ -3052,12 +3009,7 @@ function handlePlay() {
 
   const isSpecialHighTier = combo.type === '5_card' && (combo.comboTier || 1) >= 3;
   if (typeof soundFX.playCardSnap === 'function') soundFX.playCardSnap(isSpecialHighTier);
-  if (isSpecialHighTier) {
-    haptics.bomb();
-    emit('fx', 'bomb');
-  } else {
-    haptics.playCard();
-  }
+  haptics.playCard();
 
   hands[mySeat.value] = myCards.filter((c) => !selectedIds.has(c.id));
   selectedIds.clear();
@@ -3170,6 +3122,7 @@ function executePassFlow(seat: number, isRemote: boolean = false) {
     const nextS = getNextActiveSeat(seat);
     turnSeat.value = nextS;
     const names = ['本家', '西席', '北席', '东席'];
+    startTurnCountdown();
     if (nextS === mySeat.value) {
       seatStatus[mySeat.value] = lastCombo.value ? '该您跟牌' : '该您出牌';
       drawTable();
@@ -3177,9 +3130,7 @@ function executePassFlow(seat: number, isRemote: boolean = false) {
       if (isAutoHost.value) {
         checkAutoHostTurn();
       } else {
-        if (!checkPlayerAutoTurnActions()) {
-          startTurnCountdown();
-        }
+        checkPlayerAutoTurnActions();
       }
     } else {
       seatStatus[nextS] = lastCombo.value ? `${names[nextS]} 思考跟牌...` : `${names[nextS]} 思考出牌...`;
@@ -4183,7 +4134,6 @@ function botStep(seat: number) {
 
     if (typeof soundFX.playCardSnap === 'function') soundFX.playCardSnap(cb.type === 'bomb');
     soundFX.speakAction(cb.type === 'bomb' ? 'bomb' : cb.label, { isFemale: seat === 1 });
-    if (cb.type === 'bomb') emit('fx', 'bomb');
     isFirstTurn.value = false;
 
     afterComboPlayed(seat, cb);
@@ -4287,13 +4237,12 @@ function botStep(seat: number) {
       turnSeat.value = nextS;
       drawTable();
       emitStatus();
+      startTurnCountdown();
       if (nextS === mySeat.value) {
         if (isAutoHost.value) {
           checkAutoHostTurn();
         } else {
-          if (!checkPlayerAutoTurnActions()) {
-            startTurnCountdown();
-          }
+          checkPlayerAutoTurnActions();
         }
       } else if (isSeatBot(nextS)) {
         runBotTurns(nextS);

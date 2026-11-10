@@ -25,35 +25,35 @@
       <!-- 预约专列顶部信息横幅 (车厢号、出战坐席、当前桌号、06:00倒计时、车厢看板入口) -->
       <div
         v-if="isBookingScene"
-        class="absolute top-2 left-2 right-2 sm:left-4 sm:right-4 z-25 flex flex-wrap items-center justify-between gap-1.5 px-3 py-1.5 rounded-2xl bg-black/70 backdrop-blur-md border border-amber-500/40 shadow-xl pointer-events-auto select-none"
+        class="absolute top-2 left-2 right-2 sm:left-4 sm:right-4 z-25 flex items-center justify-between gap-2 px-3 py-1.5 rounded-2xl bg-black/70 backdrop-blur-md border border-amber-500/40 shadow-xl pointer-events-auto select-none"
       >
         <!-- Left: Carriage info & Chosen seat -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 shrink-0">
           <span class="text-xl sm:text-2xl animate-pulse">🚂</span>
           <div>
             <div class="flex items-center gap-1.5">
               <span class="text-xs sm:text-sm font-black text-amber-300 font-serif-title">
-                预约专列 · 第 {{ bookingCarriage?.carriageNumber || 1 }} 节车厢 (第 {{ bookingCarriage?.carriageNumber || 1 }} 场次)
+                预约专列 · 第 {{ bookingCarriage?.carriageNumber || 1 }} 车厢
               </span>
               <span
                 class="px-2 py-0.2 rounded-full text-[10px] font-bold font-mono border"
                 :class="bookingCarriage?.selectedSeat ? 'bg-amber-500/25 text-amber-300 border-amber-400/50' : 'bg-red-500/20 text-red-300 border-red-400/40'"
               >
-                {{ bookingCarriage?.selectedSeat ? `坐席: 【${bookingCarriage.selectedSeat}位】` : '待选坐席' }}
+                {{ bookingCarriage?.selectedSeat ? `【${bookingCarriage.selectedSeat}位】` : '待选' }}
               </span>
             </div>
             <div class="text-[10px] sm:text-[11px] text-[#E6DEC8] font-mono flex items-center gap-1.5">
-              <span>当前桌号: <b class="text-amber-200">第 {{ currentActiveBookingTable?.tableIndex || 1 }} 桌</b></span>
+              <span>桌号: <b class="text-amber-200">第 {{ currentActiveBookingTable?.tableIndex || 1 }} 桌</b></span>
               <span>•</span>
-              <span>车厢进度: <b class="text-emerald-300">{{ completedBookingTablesCount }} / 10 桌已就席</b></span>
+              <span>进度: <b class="text-emerald-300">{{ completedBookingTablesCount }} / 10 桌</b></span>
             </div>
           </div>
         </div>
 
         <!-- Right: 06:00 Countdown & Overview Button & Exit -->
-        <div class="flex items-center gap-1.5 sm:gap-2">
-          <div class="px-2 sm:px-2.5 py-1 rounded-xl bg-black/50 border border-white/10 text-[10px] sm:text-xs text-amber-200 font-mono flex items-center gap-1 shadow-inner">
-            <span>⏱️ 每日06:00结算:</span>
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div class="px-2 sm:px-2.5 py-1 rounded-xl bg-black/50 border border-white/10 text-[10px] sm:text-xs text-amber-200 font-mono flex items-center gap-1 shadow-inner hidden md:flex">
+            <span>⏱️ 06:00结算:</span>
             <span class="text-amber-300 font-bold font-mono">{{ bookingCountdownText }}</span>
           </div>
 
@@ -78,6 +78,20 @@
             <span>🚪 退出</span>
           </button>
         </div>
+      </div>
+
+      <!-- 十三张理牌思考倒计时 (语音聊天按钮风格胶囊 Capsule 悬浮指示器) -->
+      <div
+        v-if="!hasCompared && (!isBookingScene || !mySpecialHand)"
+        class="absolute left-1/2 transform -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-gradient-to-r from-red-950/90 via-red-900/95 to-amber-950/90 border border-red-500/80 shadow-[0_4px_16px_rgba(239,68,68,0.45)] backdrop-blur-md text-red-200 flex items-center gap-1.5 font-mono font-bold text-xs sm:text-sm tabular-nums select-none pointer-events-none transition-all"
+        :class="[
+          isBookingScene ? 'top-14 sm:top-12' : 'top-2.5 sm:top-3.5',
+          { 'animate-pulse ring-2 ring-red-400 border-red-400': arrangeCountdown <= 10 }
+        ]"
+        title="思考理牌时间上限60秒"
+      >
+        <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
+        <span class="text-xs sm:text-sm font-black text-amber-300">⏱️ {{ arrangeCountdown }}s</span>
       </div>
 
       <!-- 顶部特殊牌型常驻提醒条 (若摸到特殊牌型，高亮显著提示) -->
@@ -265,19 +279,6 @@
         </button>
       </div>
 
-      <!-- Gunshot / Grand Slam Animation Overlay -->
-      <div
-        v-if="showGunshotAnim"
-        class="absolute inset-0 bg-black/60 flex items-center justify-center z-30 pointer-events-none animate-pulse"
-      >
-        <div class="text-center">
-          <div class="text-5xl mb-2">💥 🔫 💥</div>
-          <div class="text-2xl sm:text-3xl font-black text-black font-serif-title filter drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]">
-            {{ isGrandSlam ? '【全垒打！通关所有对手 · 水数翻倍！】' : '【连环打枪！全胜对手！】' }}
-          </div>
-        </div>
-      </div>
-
       <!-- 特殊牌型弹窗说明与一键通关结算 -->
       <div
         v-if="showSpecialHandModal && mySpecialHand"
@@ -358,7 +359,7 @@
             </span>
           </div>
 
-          <!-- 右侧：八人场翻页按钮、退出与继续游戏 -->
+          <!-- 右侧：八人场翻页按钮、退出与继续游戏 (已移除战绩海报按钮) -->
           <div class="flex items-center gap-1.5 shrink-0">
             <!-- 八人场翻页按钮 -->
             <button
@@ -369,17 +370,6 @@
             >
               <span>📄</span>
               <span>{{ showdownPage === 0 ? '翻页后四席 (1/2 →)' : '翻页前四席 (← 2/2)' }}</span>
-            </button>
-
-            <!-- 战绩海报生成按钮 -->
-            <button
-              type="button"
-              @click="openVictoryPoster"
-              class="px-2.5 py-1 text-xs font-extrabold rounded-lg bg-gradient-to-r from-red-700 via-amber-700 to-amber-600 hover:from-red-600 hover:to-amber-500 text-amber-100 border border-amber-400 shadow-md flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
-              title="生成国风高光战绩海报"
-            >
-              <span>🎨</span>
-              <span>战绩海报</span>
             </button>
 
             <button
@@ -623,19 +613,7 @@
         @exit="emit('exit')"
       />
 
-      <!-- Table Inaugural Card Dealing Ceremony Banner -->
-      <transition name="fade">
-        <div
-          v-if="isDealingCeremony"
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-35 px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-950/95 via-black/95 to-blue-950/95 border-2 border-amber-400 shadow-[0_0_50px_rgba(59,130,246,0.6)] text-amber-300 font-serif-title text-sm sm:text-base flex items-center gap-3 animate-pulse pointer-events-none"
-        >
-          <span class="text-2xl animate-spin">💎</span>
-          <div class="flex flex-col">
-            <span class="font-black tracking-wider">全员满座入座成功 · 自动洗牌发牌中...</span>
-            <span class="text-[10px] text-amber-200/80 font-mono">十三水 13 张手牌权威统一预发 · 一键智能最优理牌</span>
-          </div>
-        </div>
-      </transition>
+
       </div>
     </div>
   </div>
@@ -853,7 +831,7 @@ const hasCompared = ref(false);
 const isWaitingShowdown = ref(false);
 const submittedSeats = ref<Set<number>>(new Set<number>());
 const remoteSubmittedHands = ref<Map<number, { front: Card[]; mid: Card[]; back: Card[] }>>(new Map());
-const arrangeCountdown = ref(45);
+const arrangeCountdown = ref(60);
 let arrangeTimer: any = null;
 
 const isAllOtherPlayersBots = computed(() => {
@@ -1725,7 +1703,7 @@ function dealNewMatch(forceReApply = false) {
     clearInterval(arrangeTimer);
     arrangeTimer = null;
   }
-  arrangeCountdown.value = 45;
+  arrangeCountdown.value = 60;
   if (!isBookingScene.value) {
     arrangeTimer = setInterval(() => {
       if (hasCompared.value) {
@@ -2681,10 +2659,8 @@ function executeShowdown() {
     arrangeTimer = null;
   }
   isWaitingShowdown.value = false;
-
-  showGunshotAnim.value = true;
+  showGunshotAnim.value = false;
   soundFX.playCardSnap(true);
-  haptics.gunshot();
 
   const myHand = {
     head: frontTier.value.map(toSSSCard),
@@ -2751,7 +2727,6 @@ function executeShowdown() {
   // 触发全垒打判定：打枪全场所有对手
   isGrandSlam.value = shotCount === oppCount && oppCount > 0;
   if (isGrandSlam.value) {
-    // 打枪已翻倍 (2x)，全垒打再翻一倍 (总计 4x)
     totalNet *= 2; 
     for (const res of oppResults) {
       res.netWater *= 2;
@@ -2765,10 +2740,8 @@ function executeShowdown() {
       }
     }
     haptics.victory();
-    emit('fx', 'grandslam');
     soundFX.speakAction('grand_slam');
   } else if (shotCount > 0) {
-    emit('fx', 'gunshot');
     soundFX.speakAction('gunshot');
   } else {
     soundFX.speakVoice('开牌比水完毕。');
@@ -2776,17 +2749,12 @@ function executeShowdown() {
 
   totalScore.value = totalNet;
   opponentsBreakdown.value = oppResults;
-
-  setTimeout(() => {
-    showGunshotAnim.value = false;
-    hasCompared.value = true;
-    soundFX.playVictory();
-    if (totalNet > 0) {
-      haptics.victory();
-      emit('fx', 'win');
-    }
-    emit('move', { score: totalScore.value, winner: totalNet > 0 ? 0 : (totalNet === 0 ? -1 : 1) });
-  }, 1200);
+  hasCompared.value = true;
+  soundFX.playVictory();
+  if (totalNet > 0) {
+    haptics.victory();
+  }
+  emit('move', { score: totalScore.value, winner: totalNet > 0 ? 0 : (totalNet === 0 ? -1 : 1) });
 }
 
 function handleCompare() {

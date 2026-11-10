@@ -443,16 +443,7 @@
         </div>
       </div>
 
-      <div class="pt-3 border-t border-white/10 mt-2 flex flex-wrap items-center justify-between gap-2">
-        <button
-          type="button"
-          @click="$emit('open-poster')"
-          class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-black text-xs sm:text-sm cursor-pointer transition-all flex items-center gap-1.5 shadow-md active:scale-95"
-        >
-          <span>🎨</span>
-          <span>生成高光战绩海报</span>
-        </button>
-
+      <div class="pt-3 border-t border-white/10 mt-2 flex items-center justify-end">
         <button
           type="button"
           @click="$emit('close')"
