@@ -379,22 +379,6 @@
             <span>投降</span>
           </button>
 
-          <!-- 分隔线 -->
-          <div class="h-5 sm:h-6 w-px bg-white/20 shrink-0 mx-0.5"></div>
-
-          <!-- 6. 托管按钮 (置于操作栏最右端，彻底避开左侧头像框) -->
-          <button
-            type="button"
-            @click="toggleAutoHost"
-            class="min-w-[62px] sm:min-w-[76px] h-9 sm:h-10 px-2.5 sm:px-3 text-xs sm:text-sm font-bold rounded-xl border transition-all flex items-center justify-center gap-1 cursor-pointer shrink-0 active:scale-95 shadow-md"
-            :class="isAutoHost
-              ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white border-amber-300 ring-2 ring-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.6)] animate-pulse'
-              : 'bg-stone-900/90 hover:bg-stone-800 text-amber-200 border-amber-500/40 hover:border-amber-400'"
-            :title="isAutoHost ? '点击取消托管' : '开启自动托管（轮到本家时由系统自动代出）'"
-          >
-            <span>⚡</span>
-            <span>{{ isAutoHost ? '托管中' : '托管' }}</span>
-          </button>
         </div>
       </div>
 
