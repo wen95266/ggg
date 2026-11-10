@@ -890,175 +890,170 @@
       @open-points="handleOpenPointsFromModal"
     />
 
-    <!-- 10. 大厅全游戏玩法规则与输赢计分规则模态框 (默认旋转 90 度展示) -->
+    <!-- 10. 大厅全游戏玩法规则与输赢计分规则模态框 (全屏无黑边铺满 + 横竖屏顺畅滑动) -->
     <Teleport to="body">
       <div
         v-if="showGameRulesModal"
-        class="fixed inset-0 z-[120] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 select-none overflow-hidden"
+        :class="isRulesModalRotated ? 'rules-modal-rotated-full' : 'rules-modal-standard-full'"
+        class="select-none p-3.5 sm:p-5 text-[#3C2C1E]"
       >
-        <div
-          class="w-[88vh] max-w-[660px] h-[92vw] max-h-[500px] rounded-3xl bg-[#FAF4E8] border-2 border-amber-600/60 p-3.5 sm:p-5 shadow-2xl flex flex-col text-[#3C2C1E] overflow-hidden transition-transform duration-300"
-          :class="isRulesModalRotated ? 'transform rotate-90' : ''"
-        >
-          <!-- Header -->
-          <div class="flex items-center justify-between pb-2.5 border-b border-[#D8C7B0] shrink-0">
-            <div class="flex items-center gap-2">
-              <span class="text-xl sm:text-2xl p-1.5 rounded-2xl bg-amber-600/20 text-amber-900 border border-amber-600/40">
-                {{ activeRulesTab === 'yansan' ? '🎴' : activeRulesTab === 'mahjong' ? '🀄' : '🃏' }}
-              </span>
-              <div>
-                <h3 class="text-sm sm:text-lg font-black text-[#3C2C1E] font-serif-title flex items-center gap-2">
-                  <span v-if="activeRulesTab === 'yansan'">🎴 经典烟三 · 玩法与输赢计分规则</span>
-                  <span v-else-if="activeRulesTab === 'mahjong'">🀄 麻将 (红中/普通) · 玩法与输赢计分规则</span>
-                  <span v-else>🃏 十三张 (十三水) · 玩法与输赢计分规则</span>
-                </h3>
-                <p class="text-[10px] sm:text-xs text-[#6B5744] mt-0.5">
-                  <span v-if="activeRulesTab === 'yansan'">经典方块4首发 · 黑桃3/黑桃A双煞同盟与计分规则全览</span>
-                  <span v-else-if="activeRulesTab === 'mahjong'">红中麻将自摸、刮风下雨杠牌、抓码与大满贯规则全览</span>
-                  <span v-else'">十三水全垒打、打枪、特殊牌型免比与道数比牌规则全览</span>
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <button
-                type="button"
-                @click="isRulesModalRotated = !isRulesModalRotated"
-                class="px-2 py-1 rounded-xl bg-[#EFE5D3] hover:bg-[#E5D7C2] border border-[#D8C7B0] text-[10px] sm:text-xs font-bold text-[#3C2C1E] flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-xs"
-                title="切换旋转状态"
-              >
-                <span>🔄</span>
-                <span>{{ isRulesModalRotated ? '正向' : '旋转90°' }}</span>
-              </button>
-              <button
-                type="button"
-                @click="showGameRulesModal = false"
-                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#EFE5D3] hover:bg-[#E5D7C2] border border-[#D8C7B0] flex items-center justify-center text-xs sm:text-sm font-bold text-[#3C2C1E] transition-all active:scale-95 cursor-pointer shadow-xs"
-              >
-                ✕
-              </button>
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-[#D8C7B0] shrink-0">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl sm:text-2xl p-1.5 rounded-2xl bg-amber-600/20 text-amber-900 border border-amber-600/40">
+              {{ activeRulesTab === 'yansan' ? '🎴' : activeRulesTab === 'mahjong' ? '🀄' : '🃏' }}
+            </span>
+            <div>
+              <h3 class="text-base sm:text-xl font-black text-[#3C2C1E] font-serif-title flex items-center gap-2">
+                <span v-if="activeRulesTab === 'yansan'">🎴 经典烟三 · 玩法与输赢计分规则</span>
+                <span v-else-if="activeRulesTab === 'mahjong'">🀄 麻将 (红中/普通) · 玩法与输赢计分规则</span>
+                <span v-else>🃏 十三张 (十三水) · 玩法与输赢计分规则</span>
+              </h3>
+              <p class="text-[11px] sm:text-xs text-[#6B5744] mt-0.5">
+                <span v-if="activeRulesTab === 'yansan'">经典方块4首发 · 黑桃3/黑桃A双煞同盟与计分规则全览</span>
+                <span v-else-if="activeRulesTab === 'mahjong'">红中麻将自摸、刮风下雨杠牌、抓码与大满贯规则全览</span>
+                <span v-else>十三水全垒打、打枪、特殊牌型免比与道数比牌规则全览</span>
+              </p>
             </div>
           </div>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              @click="showGameRulesModal = false"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#EFE5D3] hover:bg-[#E5D7C2] border border-[#D8C7B0] flex items-center justify-center text-xs sm:text-sm font-bold text-[#3C2C1E] transition-all active:scale-95 cursor-pointer shadow-xs"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
 
-          <!-- Rules Content Scroll Area (No Tab Switcher Bar - Strictly Separate Game Rules) -->
-          <div class="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4 text-xs sm:text-sm leading-relaxed text-[#3C2C1E] mt-3">
+        <!-- Rules Content Area (Two-Column Responsive Grid + Multi-Direction Touch Scroll) -->
+        <div class="flex-1 min-h-0 overflow-y-auto overflow-x-auto touch-pan-y touch-pan-x pr-1 text-xs sm:text-sm leading-relaxed text-[#3C2C1E] mt-3">
             <!-- 1. 十三张 (十三水) 规则 -->
-            <div v-if="activeRulesTab === 'shisanshui'" class="space-y-3">
-              <!-- 基本流程 -->
-              <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-1.5">
-                <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
-                  <span>👑 十三张基本玩法说明</span>
-                </h4>
-                <p>• <b>人数与发牌</b>：四人场（一副 52 张）或八人包厢（两副 104 张），每位玩家分配 13 张手牌。</p>
-                <p>• <b>理牌摆法</b>：13 张手牌需分配为<b>头道（3张）</b>、<b>中道（5张）</b>、<b>尾道（5张）</b>三道。</p>
-                <p>• <b>倒水相公规则</b>：必须满足<b>尾道 ≥ 中道 ≥ 头道</b>。若违规摆放（如中道大于尾道，或头道大于中道），判定为倒水相公，三道直接判定全负并额外罚扣积分。</p>
-              </div>
+            <div v-if="activeRulesTab === 'shisanshui'" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <!-- Left Column -->
+              <div class="space-y-3.5">
+                <!-- 基本流程 -->
+                <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-1.5">
+                  <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
+                    <span>👑 十三张基本玩法说明</span>
+                  </h4>
+                  <p>• <b>人数与发牌</b>：四人场（一副 52 张）或八人包厢（两副 104 张），每位玩家分配 13 张手牌。</p>
+                  <p>• <b>理牌摆法</b>：13 张手牌需分配为<b>头道（3张）</b>、<b>中道（5张）</b>、<b>尾道（5张）</b>三道。</p>
+                  <p>• <b>倒水相公规则</b>：必须满足<b>尾道 ≥ 中道 ≥ 头道</b>。若违规摆放（如中道大于尾道，或头道大于中道），判定为倒水相公，三道直接判定全负并额外罚扣积分。</p>
+                </div>
 
-              <!-- 牌型大小与花色压制 -->
-              <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
-                <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
-                  <span>⚔️ 牌型大小、花色与顺子压制规则</span>
-                </h4>
-                <p>• <b>牌型大小顺序</b>：五同（八人场） > 同花顺 > 铁支（四条） > 俘虏（葫芦） > 同花 > 顺子 > 三条 > 两对 > 对子 > 乌龙（散牌）。</p>
-                <p>• <b>花色大小顺序</b>：当牌型点数完全相同时，按花色比较：<b>黑桃 ♠ > 红桃 ♥ > 梅花 ♣ > 方块 ♦</b>。</p>
-                <p>• <b>顺子大小顺序</b>：</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-2 font-mono text-xs">
-                  <div class="p-2 rounded-xl bg-amber-50 border border-amber-200">
-                    <b class="text-amber-900">① 至尊顺（最大）：</b> 10 - J - Q - K - A
-                  </div>
-                  <div class="p-2 rounded-xl bg-amber-50 border border-amber-200">
-                    <b class="text-amber-900">② 次大顺（第二）：</b> A - 2 - 3 - 4 - 5
-                  </div>
-                  <div class="p-2 rounded-xl bg-amber-50 border border-amber-200 col-span-1 sm:col-span-2">
-                    <b class="text-amber-900">③ 普通顺：</b> 9-10-J-Q-K > ... > 3-4-5-6-7 > <b>2-3-4-5-6（最小）</b>
+                <!-- 牌型大小与花色压制 -->
+                <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
+                  <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
+                    <span>⚔️ 牌型大小、花色与顺子压制规则</span>
+                  </h4>
+                  <p>• <b>牌型大小顺序</b>：五同（八人场） > 同花顺 > 铁支（四条） > 俘虏（葫芦） > 同花 > 顺子 > 三条 > 两对 > 对子 > 乌龙（散牌）。</p>
+                  <p>• <b>花色大小顺序</b>：当牌型点数完全相同时，按花色比较：<b>黑桃 ♠ > 红桃 ♥ > 梅花 ♣ > 方块 ♦</b>。</p>
+                  <p>• <b>顺子大小顺序</b>：</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-2 font-mono text-xs">
+                    <div class="p-2 rounded-xl bg-amber-50 border border-amber-200">
+                      <b class="text-amber-900">① 至尊顺（最大）：</b> 10 - J - Q - K - A
+                    </div>
+                    <div class="p-2 rounded-xl bg-amber-50 border border-amber-200">
+                      <b class="text-amber-900">② 次大顺（第二）：</b> A - 2 - 3 - 4 - 5
+                    </div>
+                    <div class="p-2 rounded-xl bg-amber-50 border border-amber-200 col-span-1 sm:col-span-2">
+                      <b class="text-amber-900">③ 普通顺：</b> 9-10-J-Q-K > ... > 3-4-5-6-7 > <b>2-3-4-5-6（最小）</b>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- 道数直接计分表 -->
-              <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
-                <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
-                  <span>📊 三道胜出直接计分规则（1水 = 1分）</span>
-                </h4>
-                <div class="overflow-x-auto">
-                  <table class="w-full text-left border-collapse font-sans text-xs">
-                    <thead>
-                      <tr class="bg-amber-100/80 text-amber-900 font-bold border-b border-amber-300">
-                        <th class="p-2">道数</th>
-                        <th class="p-2">胜出牌型</th>
-                        <th class="p-2">计分水数</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-amber-100">
-                      <tr>
-                        <td class="p-2 font-bold text-amber-900">头道 (3张)</td>
-                        <td class="p-2">冲三条 (2~A 冲三)</td>
-                        <td class="p-2 font-bold text-emerald-700 font-mono">+3 水</td>
-                      </tr>
-                      <tr>
-                        <td class="p-2 font-bold text-amber-900">头道 (3张)</td>
-                        <td class="p-2">其他牌型 (对子、乌龙散牌)</td>
-                        <td class="p-2 font-mono">+1 水</td>
-                      </tr>
-                      <tr class="bg-amber-50/50">
-                        <td class="p-2 font-bold text-blue-900">中道 (5张)</td>
-                        <td class="p-2">同花顺 / 五同 (八人场)</td>
-                        <td class="p-2 font-bold text-emerald-700 font-mono">+10 水</td>
-                      </tr>
-                      <tr class="bg-amber-50/50">
-                        <td class="p-2 font-bold text-blue-900">中道 (5张)</td>
-                        <td class="p-2">铁支 (四条)</td>
-                        <td class="p-2 font-bold text-emerald-700 font-mono">+8 水</td>
-                      </tr>
-                      <tr class="bg-amber-50/50">
-                        <td class="p-2 font-bold text-blue-900">中道 (5张)</td>
-                        <td class="p-2">俘虏 (葫芦)</td>
-                        <td class="p-2 font-bold text-emerald-700 font-mono">+2 水</td>
-                      </tr>
-                      <tr class="bg-amber-50/50">
-                        <td class="p-2 font-bold text-blue-900">中道 (5张)</td>
-                        <td class="p-2">其他牌型 (顺子、同花、两对、对子、乌龙)</td>
-                        <td class="p-2 font-mono">+1 水</td>
-                      </tr>
-                      <tr>
-                        <td class="p-2 font-bold text-purple-900">尾道 (5张)</td>
-                        <td class="p-2">同花顺 / 五同 (八人场)</td>
-                        <td class="p-2 font-bold text-emerald-700 font-mono">+5 水</td>
-                      </tr>
-                      <tr>
-                        <td class="p-2 font-bold text-purple-900">尾道 (5张)</td>
-                        <td class="p-2">铁支 (四条)</td>
-                        <td class="p-2 font-bold text-emerald-700 font-mono">+4 水</td>
-                      </tr>
-                      <tr>
-                        <td class="p-2 font-bold text-purple-900">尾道 (5张)</td>
-                        <td class="p-2">其他牌型 (葫芦、顺子、同花、三条、两对、对子、乌龙)</td>
-                        <td class="p-2 font-mono">+1 水</td>
-                      </tr>
-                    </tbody>
-                  </table>
+              <!-- Right Column -->
+              <div class="space-y-3.5">
+                <!-- 道数直接计分表 -->
+                <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
+                  <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
+                    <span>📊 三道胜出直接计分规则（1水 = 1分）</span>
+                  </h4>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse font-sans text-xs">
+                      <thead>
+                        <tr class="bg-amber-100/80 text-amber-900 font-bold border-b border-amber-300">
+                          <th class="p-1.5">道数</th>
+                          <th class="p-1.5">胜出牌型</th>
+                          <th class="p-1.5">计分水数</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-amber-100">
+                        <tr>
+                          <td class="p-1.5 font-bold text-amber-900">头道 (3张)</td>
+                          <td class="p-1.5">冲三条 (2~A 冲三)</td>
+                          <td class="p-1.5 font-bold text-emerald-700 font-mono">+3 水</td>
+                        </tr>
+                        <tr>
+                          <td class="p-1.5 font-bold text-amber-900">头道 (3张)</td>
+                          <td class="p-1.5">其他牌型 (对子、乌龙散牌)</td>
+                          <td class="p-1.5 font-mono">+1 水</td>
+                        </tr>
+                        <tr class="bg-amber-50/50">
+                          <td class="p-1.5 font-bold text-blue-900">中道 (5张)</td>
+                          <td class="p-1.5">同花顺 / 五同 (八人场)</td>
+                          <td class="p-1.5 font-bold text-emerald-700 font-mono">+10 水</td>
+                        </tr>
+                        <tr class="bg-amber-50/50">
+                          <td class="p-1.5 font-bold text-blue-900">中道 (5张)</td>
+                          <td class="p-1.5">铁支 (四条)</td>
+                          <td class="p-1.5 font-bold text-emerald-700 font-mono">+8 水</td>
+                        </tr>
+                        <tr class="bg-amber-50/50">
+                          <td class="p-1.5 font-bold text-blue-900">中道 (5张)</td>
+                          <td class="p-1.5">俘虏 (葫芦)</td>
+                          <td class="p-1.5 font-bold text-emerald-700 font-mono">+2 水</td>
+                        </tr>
+                        <tr class="bg-amber-50/50">
+                          <td class="p-1.5 font-bold text-blue-900">中道 (5张)</td>
+                          <td class="p-1.5">其他牌型 (顺子、同花、两对等)</td>
+                          <td class="p-1.5 font-mono">+1 水</td>
+                        </tr>
+                        <tr>
+                          <td class="p-1.5 font-bold text-purple-900">尾道 (5张)</td>
+                          <td class="p-1.5">同花顺 / 五同 (八人场)</td>
+                          <td class="p-1.5 font-bold text-emerald-700 font-mono">+5 水</td>
+                        </tr>
+                        <tr>
+                          <td class="p-1.5 font-bold text-purple-900">尾道 (5张)</td>
+                          <td class="p-1.5">铁支 (四条)</td>
+                          <td class="p-1.5 font-bold text-emerald-700 font-mono">+4 水</td>
+                        </tr>
+                        <tr>
+                          <td class="p-1.5 font-bold text-purple-900">尾道 (5张)</td>
+                          <td class="p-1.5">其他牌型 (葫芦、顺子、同花等)</td>
+                          <td class="p-1.5 font-mono">+1 水</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
 
-              <!-- 特殊牌型与打枪全垒打 -->
-              <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
-                <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
-                  <span>💥 十三大特殊牌型与打枪全垒打</span>
-                </h4>
-                <p>• <b>特殊牌型免比通关</b>：至尊青龙（+36水）、一条龙（+26水）、十二皇族（+24水）、三同花顺（+20水）、三铁支（+16水）、凑一色/全大全小（+10水）、六对半/三同花/三顺子（+6水）。</p>
-                <p>• <b>打枪（2x）</b>：若玩家头中尾三道全胜某一对手，触发“打枪”，基础三道得分<b>翻倍 (2x)</b>。</p>
-                <p>• <b>全垒打（2x）</b>：若玩家打枪全场所有对手，触发“全垒打”，总得分<b>再翻倍 (2x)</b>！</p>
+                <!-- 特殊牌型与打枪全垒打 -->
+                <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
+                  <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
+                    <span>💥 十三大特殊牌型与打枪全垒打</span>
+                  </h4>
+                  <p>• <b>特殊牌型免比通关</b>：至尊青龙（+36水）、一条龙（+26水）、十二皇族（+24水）、三同花顺（+20水）、三铁支（+16水）、凑一色/全大全小（+10水）、六对半/三同花/三顺子（+6水）。</p>
+                  <p>• <b>打枪（2x）</b>：若玩家头中尾三道全胜某一对手，触发“打枪”，基础三道得分<b>翻倍 (2x)</b>。</p>
+                  <p>• <b>全垒打（2x）</b>：若玩家打枪全场所有对手，触发“全垒打”，总得分<b>再翻倍 (2x)</b>！</p>
+                </div>
               </div>
             </div>
 
             <!-- 2. 烟三 (三打一 / 双煞) 规则 -->
-            <div v-else-if="activeRulesTab === 'yansan'" class="space-y-3">
+            <div v-else-if="activeRulesTab === 'yansan'" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <!-- Left Column -->
               <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
                 <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
                   <span>🎴 经典烟三 (方块4首发 / 煞牌阵营) 玩法规则</span>
                 </h4>
                 <p>• <b>发牌与首发</b>：4名玩家各发 13 张牌。拿到<b>方块 4 (♦4)</b> 的玩家拥有首发权，出牌组合必须包含 ♦4。</p>
                 <p>• <b>煞牌同盟机制</b>：</p>
-                <div class="pl-2 space-y-1 text-xs">
+                <div class="pl-2 space-y-1.5 text-xs">
                   <p>🔹 <b>双人同盟 (2v2)</b>：抓到 <b>黑桃 3 (♠3)</b> 与 <b>黑桃 A (♠A)</b> 的两名玩家自动结为同盟，另外两名玩家结为另一同盟。</p>
                   <p>🔹 <b>独煞单挑 (1v3)</b>：若同一个玩家<b>同时抓到 ♠3 与 ♠A</b>，则该玩家单独为一方（双煞独挑），独战其余 3 名玩家！</p>
                   <p>🔹 <b>强攻单挑 (1v3)</b>：若玩家手牌极其强劲，可在首轮选择“强攻”，放弃同盟直接一人独战其余 3 家。</p>
@@ -1066,17 +1061,18 @@
                 <p>• <b>牌型与压牌</b>：支持单张、对子、三条、顺子、连对、炸弹（四条及以上）。后家必须用同张数且更大的牌型压制，无牌可压或放弃则选择“过”。</p>
               </div>
 
+              <!-- Right Column -->
               <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
                 <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
                   <span>🪙 烟三输赢计分规则 (试玩与在线场统一)</span>
                 </h4>
                 <p>• <b>独煞/强攻 1v3 计分规则</b>：</p>
-                <div class="pl-2 space-y-1 text-xs">
+                <div class="pl-2 space-y-1.5 text-xs">
                   <p>🏆 <b>独煞获胜（第 1 名出完手牌）</b>：独煞玩家向其余 3 名玩家<b>各收取 10 积分</b>（独煞玩家 <b>+30 分</b>，其余 3 人各 <b>-10 分</b>）。</p>
                   <p>❌ <b>独煞失败（未获得第 1 名）</b>：独煞玩家向其余 3 名玩家<b>各支付 10 积分</b>（独煞玩家 <b>-30 分</b>，其余 3 人各 <b>+10 分</b>）。</p>
                 </div>
                 <p>• <b>双人同盟 2v2 计分规则</b>：</p>
-                <div class="pl-2 space-y-1 text-xs">
+                <div class="pl-2 space-y-1.5 text-xs">
                   <p>🥇 <b>双胜（包揽第 1 与第 2 名出完）</b>：胜利同盟两人各 <b>+20 分</b>，失败同盟两人各 <b>-20 分</b>。</p>
                   <p>⚖️ <b>单胜 / 平局</b>：同盟仅一人获得第 1 名，若同盟另一人获得第 3 名则同盟各 <b>+10 分</b>，若得第 4 名则判定为平局 (各 <b>0 分</b>)。</p>
                 </div>
@@ -1084,7 +1080,8 @@
             </div>
 
             <!-- 3. 麻将玩法与规则 -->
-            <div v-else class="space-y-3">
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <!-- Left Column -->
               <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
                 <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
                   <span>🀄 麻将 (红中/普通) 玩法与规则说明</span>
@@ -1096,6 +1093,7 @@
                 <p>• <b>四张红中天降</b>：若起手或摸齐 4 张红中，直接触发“四红中大满贯”自摸通关！</p>
               </div>
 
+              <!-- Right Column -->
               <div class="p-3.5 rounded-2xl bg-white/80 border border-[#D8C7B0] shadow-xs space-y-2">
                 <h4 class="font-black text-amber-900 font-serif-title flex items-center gap-1.5 text-sm sm:text-base border-b border-amber-200 pb-1">
                   <span>🪙 麻将输赢计分规则</span>
@@ -1105,18 +1103,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Modal Footer Button -->
-          <div class="pt-3 border-t border-[#D8C7B0] flex items-center justify-end shrink-0 mt-2">
-            <button
-              type="button"
-              @click="showGameRulesModal = false"
-              class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-white font-black text-xs sm:text-sm shadow-md active:scale-95 cursor-pointer border border-amber-400/50"
-            >
-              我知道了，开始游戏
-            </button>
-          </div>
-        </div>
       </div>
     </Teleport>
 
@@ -1781,7 +1767,7 @@ const showMahjongSceneModal = ref(false);
 const showTermuxModal = ref(false);
 const showServerConfigModal = ref(false);
 const showGameRulesModal = ref(false);
-const isRulesModalRotated = ref(true); // 点击规则的弹窗默认旋转90度
+const isRulesModalRotated = ref(true); // 规则弹窗默认旋转90度横屏全屏展示
 const activeRulesTab = ref<'shisanshui' | 'yansan' | 'mahjong'>('shisanshui');
 
 function openGameRules(gameId: string) {
@@ -3823,6 +3809,36 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* Rotated 90-degree Master Landscape Container (全界面包括大厅与游戏舞台旋转90度横屏) */
+.rules-modal-rotated-full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100dvh;
+  height: 100dvw;
+  transform-origin: 0 0;
+  transform: rotate(90deg) translateY(-100%);
+  z-index: 120;
+  background-color: #FAF4E8;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.rules-modal-standard-full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 120;
+  background-color: #FAF4E8;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 .app-rotated-90 {
   position: fixed;
   top: 0;
