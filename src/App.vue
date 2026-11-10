@@ -836,13 +836,13 @@
       @open-termux="showTermuxModal = true"
     />
 
-    <!-- 2. 积分管理钱庄弹窗 -->
+    <!-- 2. 积分管理钱庄弹窗 (旋转90度横屏全屏展示 + 屏幕数字键盘) -->
     <PointsManageModal
       v-if="showPointsModal"
       :profile="userProfile"
+      :is-rotated-90="isRotated90"
       @close="showPointsModal = false"
       @update:profile="onUpdateProfile"
-      @theme-change="onThemeChange"
     />
 
     <!-- 3. 用户战绩档案与签到弹窗 -->
